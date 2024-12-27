@@ -161,4 +161,48 @@ button:disabled {
 
 button:disabled:hover {
     background-color: #cccccc;
+}
+
+#waiting-room-section {
+    text-align: center;
+    padding: 20px;
+}
+
+.room-info, .users-list {
+    margin: 20px auto;
+    max-width: 500px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    text-align: left;
+}
+
+#users-list {
+    list-style: none;
+    padding: 0;
+}
+
+#users-list li {
+    padding: 8px;
+    margin: 4px 0;
+    background-color: white;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.start-voting-btn {
+    margin-top: 20px;
+    padding: 12px 24px;
+    font-size: 1.1em;
+}
+
+.room-id {
+    background-color: #e8f0fe;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #1a73e8;
+    text-align: center;
 } 

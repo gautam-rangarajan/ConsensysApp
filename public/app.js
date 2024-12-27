@@ -2,6 +2,7 @@ let currentRoomId = null;
 let currentUserId = null;
 let currentMovieId = null;
 const currentYear = new Date().getFullYear();
+let roomStatusInterval = null;
 
 async function createRoom() {
     document.getElementById('create-room-form').style.display = 'block';
@@ -90,9 +91,9 @@ async function joinRoom() {
         currentUserId = data.user_id;
         
         document.getElementById('setup-section').style.display = 'none';
-        document.getElementById('voting-section').style.display = 'block';
+        document.getElementById('waiting-room-section').style.display = 'block';
         
-        startVoting();
+        startRoomStatusPolling();
     } catch (error) {
         alert('Error joining room: ' + error.message);
     }
@@ -171,6 +172,8 @@ async function showResults() {
 }
 
 function startVoting() {
+    document.getElementById('waiting-room-section').style.display = 'none';
+    document.getElementById('voting-section').style.display = 'block';
     getNextMovie();
 }
 
@@ -198,6 +201,65 @@ function validateYearInputs() {
         createButton.disabled = false;
     } else {
         createButton.disabled = true;
+    }
+}
+
+function startRoomStatusPolling() {
+    updateRoomStatus(); // Initial update
+    roomStatusInterval = setInterval(updateRoomStatus, 3000); // Update every 3 seconds
+}
+
+async function updateRoomStatus() {
+    try {
+        const response = await fetch(`/api/room-status?roomId=${currentRoomId}`);
+        const data = await response.json();
+        
+        // Update room ID display
+        const roomIdDisplay = document.getElementById('room-id-display');
+        roomIdDisplay.innerHTML = `Room ID: ${data.roomId}`;
+        
+        // Update users list
+        const usersList = document.getElementById('users-list');
+        usersList.innerHTML = data.users
+            .map(user => `<li>${user.name}</li>`)
+            .join('');
+        
+        // Update room configuration
+        const roomConfig = document.getElementById('room-config');
+        const config = data.config;
+        roomConfig.innerHTML = `
+            <p><strong>Years:</strong> ${Math.min(...config.years)} - ${Math.max(...config.years)}</p>
+            ${config.genres.length ? `<p><strong>Genres:</strong> ${config.genres.join(', ')}</p>` : ''}
+        `;
+        
+        // If voting has started, transition to voting section
+        if (data.votingStarted) {
+            clearInterval(roomStatusInterval);
+            startVoting();
+        }
+    } catch (error) {
+        console.error('Error updating room status:', error);
+    }
+}
+
+function confirmStartVoting() {
+    if (confirm('Are all users in the room? This will start voting for everyone.')) {
+        startVotingForAll();
+    }
+}
+
+async function startVotingForAll() {
+    try {
+        await fetch('/api/start-voting', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ roomId: currentRoomId })
+        });
+        
+        clearInterval(roomStatusInterval);
+        startVoting();
+    } catch (error) {
+        alert('Error starting voting: ' + error.message);
     }
 }
 

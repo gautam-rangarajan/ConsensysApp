@@ -105,6 +105,26 @@ app.post('/api/room-config', async (req, res) => {
     }
 });
 
+app.get('/api/room-status', async (req, res) => {
+    try {
+        const { roomId } = req.query;
+        const response = await makeRequest('GET', '/api/enhanced/getRoomStatus', null, { roomId });
+        res.json(response);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/start-voting', async (req, res) => {
+    try {
+        const { roomId } = req.body;
+        const response = await makeRequest('POST', '/api/enhanced/startVoting', { roomId });
+        res.json(response);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Serve the main HTML file
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
