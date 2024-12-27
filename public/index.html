@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Voting App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div id="setup-section">
+            <h1>Movie Voting App</h1>
+            <div class="action-buttons">
+                <button onclick="createRoom()">Create New Room</button>
+                <button onclick="showJoinRoom()">Join Existing Room</button>
+            </div>
+            <div id="join-room-form" style="display: none;">
+                <input type="text" id="room-id" placeholder="Enter Room ID">
+                <button onclick="setRoomId()">Set Room ID</button>
+            </div>
+            <div id="username-form" style="display: none;">
+                <input type="text" id="username" placeholder="Enter your username">
+                <button onclick="joinRoom()">Join Room</button>
+            </div>
+        </div>
+
+        <div id="voting-section" style="display: none;">
+            <h2>Current Movie</h2>
+            <div id="movie-info"></div>
+            <div class="voting-buttons">
+                <button onclick="vote('like')">👍 Like</button>
+                <button onclick="vote('not seen')">❓ Not Seen</button>
+                <button onclick="vote('dislike')">👎 Dislike</button>
+            </div>
+        </div>
+
+        <div id="results-section" style="display: none;">
+            <h2>Results</h2>
+            <div id="recommendations"></div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html> 
