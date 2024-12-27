@@ -33,11 +33,7 @@ async function makeRequest(method, endpoint, data = null, params = null) {
 // API Routes
 app.post('/api/rooms', async (req, res) => {
     try {
-        const { yearRange, genres } = req.body;
-        const response = await makeRequest('POST', '/api/enhanced/createRoom', {
-            yearRange,
-            genres
-        });
+        const response = await makeRequest('POST', '/api/enhanced/createRoom');
         res.json(response);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -93,11 +89,12 @@ app.get('/api/recommendations', async (req, res) => {
 
 app.post('/api/room-config', async (req, res) => {
     try {
-        const { roomId, years, genres } = req.body;
+        const { roomId, years, genres, votingDuration } = req.body;
         const response = await makeRequest('POST', '/api/enhanced/updateRoomConfig', {
             roomId,
             years,
-            genres
+            genres,
+            votingDuration
         });
         res.json(response);
     } catch (error) {

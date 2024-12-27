@@ -205,4 +205,36 @@ button:disabled:hover {
     font-weight: bold;
     color: #1a73e8;
     text-align: center;
+}
+
+/* Add new styles */
+.timer-input {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+#voting-timer {
+    flex: 1;
+}
+
+#timer-display {
+    min-width: 60px;
+    text-align: right;
+}
+
+.timer-countdown {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #1a73e8;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 4px;
+    font-size: 1.2em;
+    font-weight: bold;
 } 

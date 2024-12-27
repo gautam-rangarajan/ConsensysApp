@@ -140,6 +140,14 @@
                 <h3>Room Information</h3>
                 <div id="room-id-display" class="room-id"></div>
                 <div id="room-config"></div>
+                
+                <div class="form-group">
+                    <label>Voting Timer (minutes):</label>
+                    <div class="timer-input">
+                        <input type="range" id="voting-timer" min="0.5" max="10" step="0.5" value="5">
+                        <span id="timer-display">5:00</span>
+                    </div>
+                </div>
             </div>
             
             <div class="users-list">
@@ -151,7 +159,14 @@
         </div>
 
         <div id="voting-section" style="display: none;">
-            <h2>Current Movie</h2>
+            <div id="learning-phase">
+                <h2>Learning Your Taste</h2>
+                <p>Help us understand what movies you like!</p>
+            </div>
+            <div id="voting-phase" style="display: none;">
+                <h2>Let's Find a Movie</h2>
+                <p>Vote on movies until the timer runs out!</p>
+            </div>
             <div id="movie-info"></div>
             <div class="voting-buttons">
                 <button onclick="vote('like')">👍 Like</button>

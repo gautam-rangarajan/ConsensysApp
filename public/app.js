@@ -3,6 +3,10 @@ let currentUserId = null;
 let currentMovieId = null;
 const currentYear = new Date().getFullYear();
 let roomStatusInterval = null;
+let votingTimer = null;
+let votingEndTime = null;
+let selectedYears = [];
+let selectedGenres = [];
 
 async function createRoom() {
     document.getElementById('create-room-form').style.display = 'block';
@@ -12,50 +16,21 @@ async function createRoom() {
 async function submitCreateRoom() {
     const startYear = document.getElementById('start-year').value;
     const endYear = document.getElementById('end-year').value;
-    const selectedGenres = Array.from(document.querySelectorAll('.genre-checkbox input:checked'))
+    
+    // Store the selected values
+    selectedGenres = Array.from(document.querySelectorAll('.genre-checkbox input:checked'))
         .map(checkbox => checkbox.value);
-
-    // Validate years
-    if (!startYear || !endYear) {
-        alert('Please enter both start and end years');
-        return;
-    }
-
-    if (parseInt(startYear) > parseInt(endYear)) {
-        alert('Start year must be less than or equal to end year');
-        return;
-    }
+    selectedYears = Array.from(
+        { length: parseInt(endYear) - parseInt(startYear) + 1 },
+        (_, i) => parseInt(startYear) + i
+    );
 
     try {
-        // First create the room
         const createResponse = await fetch('/api/rooms', {
             method: 'POST'
         });
         const roomData = await createResponse.json();
         currentRoomId = roomData.room_id;
-
-        // Generate array of years
-        const years = Array.from(
-            { length: parseInt(endYear) - parseInt(startYear) + 1 },
-            (_, i) => parseInt(startYear) + i
-        );
-
-        // Then update the room configuration
-        const configResponse = await fetch('/api/room-config', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                roomId: currentRoomId,
-                years: years,
-                genres: selectedGenres
-            })
-        });
-        
-        if (!configResponse.ok) {
-            throw new Error('Failed to update room configuration');
-        }
 
         alert(`Room created! Room ID: ${currentRoomId}`);
         document.getElementById('username-form').style.display = 'block';
@@ -92,6 +67,21 @@ async function joinRoom() {
         
         document.getElementById('setup-section').style.display = 'none';
         document.getElementById('waiting-room-section').style.display = 'block';
+        
+        // Apply stored configuration if this user created the room
+        if (selectedYears.length > 0) {
+            await fetch('/api/room-config', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    roomId: currentRoomId,
+                    years: selectedYears,
+                    genres: selectedGenres
+                })
+            });
+        }
         
         startRoomStatusPolling();
     } catch (error) {
@@ -131,10 +121,31 @@ async function vote(voteType) {
         });
         const data = await response.json();
         
-        if (data.status === 'seeding_complete') {
+        if (data.status === 'voting_ended') {
             showResults();
+        }  else if (data.status === 'seeding_complete') {
+            // All users finished seeding, start the voting phase
+            document.getElementById('learning-phase').style.display = 'none';
+            document.getElementById('voting-phase').style.display = 'block';
+            // Start the timer now
+            fetch(`/api/room-status?roomId=${currentRoomId}`)
+                .then(response => response.json())
+                .then(data => {
+                    startVotingTimer(data.config.voting_duration);
+                    getNextMovie();
+                });
         } else if (data.status === 'user_seeding_complete') {
-            alert('You have completed voting! Waiting for other users...');
+            // Keep learning phase visible but show waiting message
+            document.getElementById('learning-phase').innerHTML = `
+                <h2>Learning Phase Complete!</h2>
+                <p>Waiting for other users to finish...</p>
+            `;
+            document.getElementById('movie-info').innerHTML = '';  // Clear movie info
+            document.querySelector('.voting-buttons').style.display = 'none';  // Hide voting buttons
+            // Important: Don't hide learning phase div so room status polling can detect it
+            console.log("Starting room status polling because this user it ready for next state");
+            setInterval(updateRoomStatus, 3000);
+
         } else {
             getNextMovie();
         }
@@ -174,6 +185,8 @@ async function showResults() {
 function startVoting() {
     document.getElementById('waiting-room-section').style.display = 'none';
     document.getElementById('voting-section').style.display = 'block';
+    document.getElementById('learning-phase').style.display = 'block';
+    document.getElementById('voting-phase').style.display = 'none';
     getNextMovie();
 }
 
@@ -205,11 +218,13 @@ function validateYearInputs() {
 }
 
 function startRoomStatusPolling() {
+    console.log("Starting room status polling");
     updateRoomStatus(); // Initial update
     roomStatusInterval = setInterval(updateRoomStatus, 3000); // Update every 3 seconds
 }
 
 async function updateRoomStatus() {
+    console.log("Updating room status");
     try {
         const response = await fetch(`/api/room-status?roomId=${currentRoomId}`);
         const data = await response.json();
@@ -231,9 +246,27 @@ async function updateRoomStatus() {
             <p><strong>Years:</strong> ${Math.min(...config.years)} - ${Math.max(...config.years)}</p>
             ${config.genres.length ? `<p><strong>Genres:</strong> ${config.genres.join(', ')}</p>` : ''}
         `;
+
+        const votingSection = document.getElementById('voting-section');
+        const learningPhase = document.getElementById('learning-phase');
+        const votingPhase = document.getElementById('voting-phase');
+
+        // If seeding is complete and we're still in learning phase, transition to voting
+        if (data.seedingComplete && 
+            document.getElementById('voting-section').style.display === 'block' && 
+            document.getElementById('learning-phase').style.display !== 'none') {
+            
+            document.getElementById('learning-phase').style.display = 'none';
+            document.getElementById('voting-phase').style.display = 'block';
+            document.querySelector('.voting-buttons').style.display = 'block';  // Re-enable voting buttons
+            
+            // Start the timer now
+            startVotingTimer(data.config.voting_duration);
+            getNextMovie();
+        }
         
-        // If voting has started, transition to voting section
-        if (data.votingStarted) {
+        // If voting has started, transition from waiting room
+        if (data.votingStarted && document.getElementById('waiting-room-section').style.display !== 'none') {
             clearInterval(roomStatusInterval);
             startVoting();
         }
@@ -249,7 +282,28 @@ function confirmStartVoting() {
 }
 
 async function startVotingForAll() {
+    const votingDuration = document.getElementById('voting-timer').value * 60;
+    if (!votingDuration) {
+        alert('Please set a voting duration before starting');
+        return;
+    }
+
     try {
+        // First update room config with voting duration
+        await fetch('/api/room-config', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                roomId: currentRoomId,
+                years: selectedYears,
+                genres: selectedGenres,
+                votingDuration: votingDuration
+            })
+        });
+
+        // Then start voting
         await fetch('/api/start-voting', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -262,6 +316,77 @@ async function startVotingForAll() {
         alert('Error starting voting: ' + error.message);
     }
 }
+
+function updateTimerDisplay() {
+    const minutes = document.getElementById('voting-timer').value;
+    const minutesInt = Math.floor(minutes);
+    const seconds = Math.round((minutes - minutesInt) * 60);
+    document.getElementById('timer-display').textContent = 
+        `${minutesInt}:${seconds.toString().padStart(2, '0')}`;
+}
+
+function startVotingTimer(duration) {
+    votingEndTime = Date.now() + (duration * 1000);
+    
+    // Create timer display element
+    const timerElement = document.createElement('div');
+    timerElement.className = 'timer-countdown';
+    document.body.appendChild(timerElement);
+    
+    votingTimer = setInterval(() => {
+        const now = Date.now();
+        const timeLeft = Math.max(0, votingEndTime - now);
+        
+        if (timeLeft === 0) {
+            clearInterval(votingTimer);
+            clearInterval(roomStatusInterval);
+            showResults();
+            return;
+        }
+        
+        const minutes = Math.floor(timeLeft / 60000);
+        const seconds = Math.floor((timeLeft % 60000) / 1000);
+        timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }, 1000);
+}
+
+// Add new function to update room configuration with timer
+async function updateRoomConfig() {
+    const votingDuration = document.getElementById('voting-timer').value * 60; // Convert to seconds
+    
+    try {
+        // First get current config
+        const statusResponse = await fetch(`/api/room-status?roomId=${currentRoomId}`);
+        const statusData = await statusResponse.json();
+        const currentConfig = statusData.config;
+
+        // Then update with new voting duration while preserving existing config
+        const response = await fetch('/api/room-config', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                roomId: currentRoomId,
+                years: currentConfig.years,  // Include existing years
+                genres: currentConfig.genres,  // Include existing genres
+                votingDuration: votingDuration
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to update room configuration');
+        }
+    } catch (error) {
+        alert('Error updating room configuration: ' + error.message);
+    }
+}
+
+// Add event listener for timer changes
+document.getElementById('voting-timer').addEventListener('input', () => {
+    updateTimerDisplay();
+    updateRoomConfig();
+});
 
 document.addEventListener('DOMContentLoaded', () => {
     // Update max year attributes
@@ -276,4 +401,5 @@ document.addEventListener('DOMContentLoaded', () => {
     
     document.getElementById('start-year').addEventListener('input', validateYearInputs);
     document.getElementById('end-year').addEventListener('input', validateYearInputs);
+    document.getElementById('voting-timer').addEventListener('input', updateTimerDisplay);
 }); 
