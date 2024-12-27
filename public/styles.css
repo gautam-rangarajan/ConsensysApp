@@ -70,4 +70,95 @@ input {
 
 #recommendations {
     margin-top: 20px;
+}
+
+.form-group {
+    margin: 20px 0;
+    text-align: left;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 12px;
+    color: #333;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.year-inputs {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.year-inputs input[type="number"] {
+    width: 120px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1em;
+}
+
+.year-inputs span {
+    color: #666;
+    font-weight: 500;
+}
+
+.genres-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.genre-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    background: white;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.genre-checkbox:hover {
+    background-color: #e8f0fe;
+}
+
+.genre-checkbox input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}
+
+.genre-checkbox label {
+    margin: 0;
+    font-weight: normal;
+    cursor: pointer;
+}
+
+.selected-genres {
+    margin-top: 10px;
+    font-size: 0.9em;
+    color: #666;
+}
+
+/* Add styles for disabled button */
+button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+button:disabled:hover {
+    background-color: #cccccc;
 } 

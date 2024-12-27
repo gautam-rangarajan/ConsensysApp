@@ -1,12 +1,61 @@
 let currentRoomId = null;
 let currentUserId = null;
 let currentMovieId = null;
+const currentYear = new Date().getFullYear();
 
 async function createRoom() {
+    document.getElementById('create-room-form').style.display = 'block';
+    document.getElementById('join-room-form').style.display = 'none';
+}
+
+async function submitCreateRoom() {
+    const startYear = document.getElementById('start-year').value;
+    const endYear = document.getElementById('end-year').value;
+    const selectedGenres = Array.from(document.querySelectorAll('.genre-checkbox input:checked'))
+        .map(checkbox => checkbox.value);
+
+    // Validate years
+    if (!startYear || !endYear) {
+        alert('Please enter both start and end years');
+        return;
+    }
+
+    if (parseInt(startYear) > parseInt(endYear)) {
+        alert('Start year must be less than or equal to end year');
+        return;
+    }
+
     try {
-        const response = await fetch('/api/rooms', { method: 'POST' });
-        const data = await response.json();
-        currentRoomId = data.room_id;
+        // First create the room
+        const createResponse = await fetch('/api/rooms', {
+            method: 'POST'
+        });
+        const roomData = await createResponse.json();
+        currentRoomId = roomData.room_id;
+
+        // Generate array of years
+        const years = Array.from(
+            { length: parseInt(endYear) - parseInt(startYear) + 1 },
+            (_, i) => parseInt(startYear) + i
+        );
+
+        // Then update the room configuration
+        const configResponse = await fetch('/api/room-config', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                roomId: currentRoomId,
+                years: years,
+                genres: selectedGenres
+            })
+        });
+        
+        if (!configResponse.ok) {
+            throw new Error('Failed to update room configuration');
+        }
+
         alert(`Room created! Room ID: ${currentRoomId}`);
         document.getElementById('username-form').style.display = 'block';
     } catch (error) {
@@ -16,6 +65,7 @@ async function createRoom() {
 
 function showJoinRoom() {
     document.getElementById('join-room-form').style.display = 'block';
+    document.getElementById('create-room-form').style.display = 'none';
 }
 
 function setRoomId() {
@@ -122,4 +172,46 @@ async function showResults() {
 
 function startVoting() {
     getNextMovie();
-} 
+}
+
+function updateSelectedGenres() {
+    const selectedGenres = Array.from(document.querySelectorAll('.genre-checkbox input:checked'))
+        .map(checkbox => checkbox.value);
+    const selectedGenresDiv = document.querySelector('.selected-genres');
+    
+    if (selectedGenres.length > 0) {
+        selectedGenresDiv.textContent = `Selected: ${selectedGenres.join(', ')}`;
+    } else {
+        selectedGenresDiv.textContent = '';
+    }
+}
+
+function validateYearInputs() {
+    const startYear = document.getElementById('start-year').value;
+    const endYear = document.getElementById('end-year').value;
+    const createButton = document.getElementById('create-room-button');
+    
+    if (startYear && endYear && 
+        parseInt(startYear) >= 1900 && 
+        parseInt(endYear) <= currentYear && 
+        parseInt(startYear) <= parseInt(endYear)) {
+        createButton.disabled = false;
+    } else {
+        createButton.disabled = true;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Update max year attributes
+    const yearInputs = document.querySelectorAll('input[type="number"]');
+    yearInputs.forEach(input => {
+        input.max = currentYear;
+    });
+    
+    document.querySelectorAll('.genre-checkbox input').forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectedGenres);
+    });
+    
+    document.getElementById('start-year').addEventListener('input', validateYearInputs);
+    document.getElementById('end-year').addEventListener('input', validateYearInputs);
+}); 

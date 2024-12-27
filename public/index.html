@@ -14,6 +14,115 @@
                 <button onclick="createRoom()">Create New Room</button>
                 <button onclick="showJoinRoom()">Join Existing Room</button>
             </div>
+            
+            <div id="create-room-form" style="display: none;">
+                <div class="form-group">
+                    <label>Year Range:</label>
+                    <div class="year-inputs">
+                        <input type="number" id="start-year" min="1900" placeholder="Start Year" required>
+                        <span>to</span>
+                        <input type="number" id="end-year" min="1900" placeholder="End Year" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Genres (Optional):</label>
+                    <div class="genres-container">
+                        <div class="genre-checkbox">
+                            <input type="checkbox" id="genre-action" value="Action">
+                            <label for="genre-action">Action</label>
+                        </div>
+                        <div class="genre-checkbox">
+                            <input type="checkbox" id="genre-adventure" value="Adventure">
+                            <label for="genre-adventure">Adventure</label>
+                        </div>
+                        <div class="genre-checkbox">
+                            <input type="checkbox" id="genre-animation" value="Animation">
+                            <label for="genre-animation">Animation</label>
+                        </div>
+                        <div class="genre-checkbox">
+                            <input type="checkbox" id="genre-biography" value="Biography">
+                            <label for="genre-biography">Biography</label>
+                        </div>
+                        <div class="genre-checkbox">
+                            <input type="checkbox" id="genre-comedy" value="Comedy">
+                            <label for="genre-comedy">Comedy</label>
+                        </div>
+                        <div class="genre-checkbox">
+                            <input type="checkbox" id="genre-crime" value="Crime">
+                            <label for="genre-crime">Crime</label>
+                        </div>
+                        <div class="genre-checkbox">
+                            <input type="checkbox" id="genre-documentary" value="Documentary">
+                            <label for="genre-documentary">Documentary</label>
+                        </div>
+                        <div class="genre-checkbox">
+                            <input type="checkbox" id="genre-drama" value="Drama">
+                            <label for="genre-drama">Drama</label>
+                        </div>
+                        <div class="genre-checkbox">
+                            <input type="checkbox" id="genre-family" value="Family">
+                            <label for="genre-family">Family</label>
+                        </div>
+                        <div class="genre-checkbox">
+                            <input type="checkbox" id="genre-fantasy" value="Fantasy">
+                            <label for="genre-fantasy">Fantasy</label>
+                        </div>
+                        <div class="genre-checkbox">
+                            <input type="checkbox" id="genre-history" value="History">
+                            <label for="genre-history">History</label>
+                        </div>
+                        <div class="genre-checkbox">
+                            <input type="checkbox" id="genre-horror" value="Horror">
+                            <label for="genre-horror">Horror</label>
+                        </div>
+                        <div class="genre-checkbox">
+                            <input type="checkbox" id="genre-music" value="Music">
+                            <label for="genre-music">Music</label>
+                        </div>
+                        <div class="genre-checkbox">
+                            <input type="checkbox" id="genre-musical" value="Musical">
+                            <label for="genre-musical">Musical</label>
+                        </div>
+                        <div class="genre-checkbox">
+                            <input type="checkbox" id="genre-mystery" value="Mystery">
+                            <label for="genre-mystery">Mystery</label>
+                        </div>
+                        <div class="genre-checkbox">
+                            <input type="checkbox" id="genre-romance" value="Romance">
+                            <label for="genre-romance">Romance</label>
+                        </div>
+                        <div class="genre-checkbox">
+                            <input type="checkbox" id="genre-sci-fi" value="Sci-Fi">
+                            <label for="genre-sci-fi">Sci-Fi</label>
+                        </div>
+                        <div class="genre-checkbox">
+                            <input type="checkbox" id="genre-short" value="Short">
+                            <label for="genre-short">Short</label>
+                        </div>
+                        <div class="genre-checkbox">
+                            <input type="checkbox" id="genre-sport" value="Sport">
+                            <label for="genre-sport">Sport</label>
+                        </div>
+                        <div class="genre-checkbox">
+                            <input type="checkbox" id="genre-thriller" value="Thriller">
+                            <label for="genre-thriller">Thriller</label>
+                        </div>
+                        <div class="genre-checkbox">
+                            <input type="checkbox" id="genre-war" value="War">
+                            <label for="genre-war">War</label>
+                        </div>
+                        <div class="genre-checkbox">
+                            <input type="checkbox" id="genre-western" value="Western">
+                            <label for="genre-western">Western</label>
+                        </div>
+                    </div>
+                    <div class="selected-genres"></div>
+                </div>
+                
+                <button id="create-room-button" onclick="submitCreateRoom()" disabled>Create Room</button>
+            </div>
+
             <div id="join-room-form" style="display: none;">
                 <input type="text" id="room-id" placeholder="Enter Room ID">
                 <button onclick="setRoomId()">Set Room ID</button>
